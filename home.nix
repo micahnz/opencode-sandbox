@@ -10,28 +10,41 @@
     coreutils
 
     # general development tools
+    ast-grep
+    bat
+    comby
     curl
+    curlie
+    delta
+    difftastic
     diffutils
     fd
     file
     findutils
+    fzf
     gawk
+    gh
     git
-    gnugrep
-    gnused
     gnutar
     gzip
+    hyperfine
     jq
     less
     lsof
     patch
     procps
     ripgrep
+    scc
+    sd
+    shellcheck
+    tokei
     tree
     unzip
+    watchexec
     wget
     which
     xz
+    yq-go
     zip
 
     # opencode development tools
@@ -39,29 +52,28 @@
 
     # nix development tools
     nixd
-    nixpkgs-fmt
 
     # C development tools
     clang
-    gcc
-    make
+    clang-tools
     cppcheck
+    make
     valgrind
 
     # Go development tools
+    delve
     go_latest
-    go-jsonnet
     golangci-lint
     gopls
-    delve
 
     # TypeScript development tools
-    nodejs_26
+    biome
     bun
-    typescript
+    nodejs_26
+    vtsls
     oxfmt
     oxlint
-    biome
+    typescript
 
     # jsonnet development tools
     go-jsonnet
