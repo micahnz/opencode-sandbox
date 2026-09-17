@@ -21,6 +21,9 @@ export OPENCODE_SEVER_PASSWORD="password"
 
 docker run --rm -ti \
   --name opencode \
+  --mount type=volume,src=opencode-nix,dst=/nix \
+  --mount type=volume,src=opencode-nix-cache,dst=$HOME/.cache/nix \
+  --mount type=volume,src=opencode-nix-defexpr,dst=$HOME/.nix-defexpr \
   --mount type=bind,src="$HOME/.config/openchamber",dst=$HOME/.config/openchamber \
   --mount type=bind,src="$HOME/.config/opencode",dst=$HOME/.config/opencode \
   --mount type=bind,src="$HOME/.local/share/opencode",dst=$HOME/.local/share/opencode \
