@@ -1,8 +1,14 @@
 # syntax=docker/dockerfile:1
 ARG BUILD_IMAGE=dhi.io/debian-base:trixie-debian13-dev
 ARG RUNTIME_IMAGE=dhi.io/debian-base:trixie-debian13
+ARG USER=agent
+ARG UID=1000
+ARG GID=1000
 
 FROM ${BUILD_IMAGE} AS nix-builder
+ARG USER
+ARG UID
+ARG GID
 
 USER root
 
@@ -17,26 +23,26 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 RUN useradd \
-        --uid 1000 \
+        --uid ${UID} \
         --create-home \
         --shell /bin/bash \
-        agent \
+        "${USER}" \
     && mkdir -p /nix \
-    && chown -R agent:agent /nix /home/agent
+    && chown -R ${UID}:${GID} /nix /home/${USER}
 
-USER agent
+USER ${USER}
 
-ENV USER=agent
-ENV HOME=/home/agent
-ENV PATH=/home/agent/.nix-profile/bin:/nix/var/nix/profiles/default/bin:/usr/local/bin:/usr/bin:/bin
+ENV USER=${USER}
+ENV HOME=/home/${USER}
+ENV PATH=/home/${USER}/.nix-profile/bin:/nix/var/nix/profiles/default/bin:/usr/local/bin:/usr/bin:/bin
 
-WORKDIR /home/agent
+WORKDIR /home/${USER}
 
 RUN curl --proto '=https' --tlsv1.2 --fail --location \
         https://nixos.org/nix/install \
     | sh -s -- --no-daemon
 
-COPY --chown=1000:1000 nix.conf /home/agent/.config/nix/nix.conf
+COPY --chown=${UID}:${GID} nix.conf /home/${USER}/.config/nix/nix.conf
 
 RUN . "$HOME/.nix-profile/etc/profile.d/nix.sh" \
     && nix-channel --add https://nixos.org/channels/nixpkgs-unstable nixpkgs \
@@ -46,36 +52,38 @@ RUN . "$HOME/.nix-profile/etc/profile.d/nix.sh" \
 RUN . "$HOME/.nix-profile/etc/profile.d/nix.sh" \
     && nix-shell '<home-manager>' -A install
 
-COPY --chown=1000:1000 home.nix /home/agent/.config/home-manager/home.nix
-
-RUN . "$HOME/.nix-profile/etc/profile.d/nix.sh" \
-    && home-manager switch -b backup
-
 # Runtime
 FROM ${RUNTIME_IMAGE} AS runtime
+ARG USER
+ARG UID
+ARG GID
 
-USER 1000:1000
-
-ENV USER=agent
-ENV HOME=/home/agent
-ENV NIX_PATH=nixpkgs=channel:nixpkgs-unstable
-ENV PATH=/home/agent/.nix-profile/bin:/nix/var/nix/profiles/default/bin:/usr/local/bin:/usr/bin:/bin
-
-WORKDIR /home/agent
-
-# default user and home directory from the build image
+COPY --from=nix-builder /usr/bin/sed /usr/bin/sed
 COPY --from=nix-builder /etc/passwd /etc/passwd
 COPY --from=nix-builder /etc/group /etc/group
-COPY --from=nix-builder --chown=1000:1000 /nix /nix
-COPY --from=nix-builder --chown=1000:1000 /home/agent /home/agent
 
-# copy agent documentation and configuration files
-COPY --chown=1000:1000 AGENTS.md /home/agent/AGENTS.md
-COPY --chown=1000:1000 .agents /home/agent/.agents
+# default user and home directory from the build image
+COPY --from=nix-builder --chown=${UID}:${GID} /nix /nix
+COPY --from=nix-builder --chown=${UID}:${GID} /home/${USER} /home/${USER}
+
+USER ${USER}
+ENV USER=${USER}
+ENV HOME=/home/${USER}
+ENV NIX_PATH=nixpkgs=channel:nixpkgs-unstable
+ENV PATH=/home/${USER}/.nix-profile/bin:/nix/var/nix/profiles/default/bin:/usr/local/bin:/usr/bin:/bin
+WORKDIR /home/${USER}
 
 # entrypoint script
-COPY --chown=1000:1000 entrypoint.sh /usr/local/bin/entrypoint.sh
+COPY --chown=${UID}:${GID} entrypoint.sh /usr/local/bin/entrypoint.sh
 
-ENTRYPOINT ["/home/agent/.nix-profile/bin/bash", "/usr/local/bin/entrypoint.sh"]
+# copy agent documentation and configuration files
+COPY --chown=${UID}:${GID} .agents /home/${USER}/.agents
+RUN sed -i 's/__USER__/'${USER}'/g' /home/${USER}/.agents/AGENTS.md
+
+# home-manager configuration
+COPY --chown=${UID}:${GID} home.nix /home/${USER}/.config/home-manager/home.nix
+RUN sed -i 's/__USER__/'${USER}'/g' /home/${USER}/.config/home-manager/home.nix
+
+ENTRYPOINT ["/bin/bash", "/usr/local/bin/entrypoint.sh"]
 
 CMD ["serve"]
