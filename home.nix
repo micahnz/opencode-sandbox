@@ -1,6 +1,11 @@
 { pkgs, ... }:
 let
-  # Pin the specific version of nixpkgs using the commit hash
+  # Import the unstable nixpkgs for use in the configuration
+  upkgs = import <nixpkgs-unstable> {
+    system = pkgs.stdenv.hostPlatform.system;
+  };
+
+  # opencode pinned version
   opencode_1_18_29 = import
     (fetchTarball {
       url = "https://github.com/NixOS/nixpkgs/archive/d91a239ca0118ff10ee22ba54f48929c38ab8114.tar.gz";
@@ -12,82 +17,81 @@ in
   home.homeDirectory = "/home/__USER__";
   home.stateVersion = "26.05";
 
-  home.packages = with pkgs; [
-    bashInteractive
-    coreutils
+  home.packages = [
+    pkgs.bashInteractive
+    pkgs.coreutils
 
     # general development tools
-    ast-grep
-    bat
-    curl
-    curlie
-    delta
-    difftastic
-    diffutils
-    fd
-    file
-    findutils
-    fzf
-    gawk
-    gh
-    git
-    gnugrep
-    gnused
-    gnutar
-    gzip
-    hyperfine
-    jq
-    less
-    lsof
-    openssh
-    patch
-    perl
-    procps
-    python3
-    ripgrep
-    rsync
-    scc
-    sd
-    shellcheck
-    tokei
-    tree
-    unzip
-    watchexec
-    wget
-    which
-    xz
-    yq-go
-    zip
+    pkgs.ast-grep
+    pkgs.bat
+    pkgs.curl
+    pkgs.curlie
+    pkgs.delta
+    pkgs.difftastic
+    pkgs.diffutils
+    pkgs.fd
+    pkgs.file
+    pkgs.findutils
+    pkgs.fzf
+    pkgs.gawk
+    pkgs.gh
+    pkgs.git
+    pkgs.gnugrep
+    pkgs.gnused
+    pkgs.gnutar
+    pkgs.gzip
+    pkgs.hyperfine
+    pkgs.jq
+    pkgs.less
+    pkgs.lsof
+    pkgs.openssh
+    pkgs.patch
+    pkgs.perl
+    pkgs.procps
+    pkgs.python3
+    pkgs.ripgrep
+    pkgs.rsync
+    pkgs.scc
+    pkgs.sd
+    pkgs.shellcheck
+    pkgs.tokei
+    pkgs.tree
+    pkgs.unzip
+    pkgs.watchexec
+    pkgs.wget
+    pkgs.which
+    pkgs.xz
+    pkgs.yq-go
+    pkgs.zip
 
     # opencode development tools
     opencode_1_18_29.opencode
 
     # nix development tools
-    nixd
+    pkgs.nixd
 
     # C development tools
-    gcc16
-    gnumake
-    cppcheck
-    valgrind
+    pkgs.gcc16
+    pkgs.gnumake
+    pkgs.cppcheck
+    pkgs.valgrind
 
     # Go development tools
-    delve
-    go_latest
-    golangci-lint
-    gopls
+    pkgs.delve
+    pkgs.go_1_27
+    pkgs.golangci-lint
+    pkgs.gopls
 
-    # TypeScript development tools
-    biome
-    bun
-    nodejs_26
-    vtsls
-    oxfmt
-    oxlint
-    typescript
+    # TypeScript development toolss
+    pkgs.biome
+    pkgs.bun
+    pkgs.nodejs
+    pkgs.oxfmt
+    pkgs.oxlint
+    pkgs.typescript
 
     # jsonnet development tools
-    go-jsonnet
+    pkgs.go-jsonnet
   ];
 
   home.sessionPath = [

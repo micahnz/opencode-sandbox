@@ -45,8 +45,9 @@ RUN curl --proto '=https' --tlsv1.2 --fail --location \
 COPY --chown=${UID}:${GID} nix.conf /home/${USER}/.config/nix/nix.conf
 
 RUN . "$HOME/.nix-profile/etc/profile.d/nix.sh" \
-    && nix-channel --add https://nixos.org/channels/nixpkgs-unstable nixpkgs \
-    && nix-channel --add https://github.com/nix-community/home-manager/archive/master.tar.gz home-manager \
+    && nix-channel --add https://nixos.org/channels/nixos-26.05 nixpkgs \
+    && nix-channel --add https://nixos.org/channels/nixpkgs-unstable nixpkgs-unstable \
+    && nix-channel --add https://github.com/nix-community/home-manager/archive/release-26.05.tar.gz home-manager \
     && nix-channel --update
 
 RUN . "$HOME/.nix-profile/etc/profile.d/nix.sh" \
@@ -69,7 +70,6 @@ COPY --from=nix-builder --chown=${UID}:${GID} /home/${USER} /home/${USER}
 USER ${USER}
 ENV USER=${USER}
 ENV HOME=/home/${USER}
-ENV NIX_PATH=nixpkgs=channel:nixpkgs-unstable
 ENV PATH=/home/${USER}/.nix-profile/bin:/nix/var/nix/profiles/default/bin:/usr/local/bin:/usr/bin:/bin
 WORKDIR /home/${USER}
 

@@ -1,4 +1,4 @@
-#!/home/micah/.nix-profile/bin/bash
+#!/bin/bash
 set -euo pipefail
 
 source "$HOME/.nix-profile/etc/profile.d/nix.sh"
