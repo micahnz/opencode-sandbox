@@ -17,6 +17,16 @@ in
   home.homeDirectory = "/home/__USER__";
   home.stateVersion = "26.05";
 
+  # Git configuration
+  programs.git = {
+    enable = true;
+    settings = {
+      user.name = "__USER__ <opencode-sandbox>";
+      user.email = "__USER__@opencode-sandbox.localhost";
+      extraConfig.init.defaultBranch = "main";
+    };
+  };
+
   home.packages = [
     pkgs.bashInteractive
     pkgs.coreutils
